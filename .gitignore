@@ -1,0 +1,13 @@
+.DS_Store
+._*
+
+.codegraph/
+.runtime/
+.playwright-mcp/
+
+backend/.env
+backend/.venv/
+backend/.pytest_cache/
+
+*.db
+storage/

@@ -1,0 +1,12 @@
+__SITE_ADDRESS__ {
+	root * __DEPLOY_DIR__/frontend
+
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8000
+	}
+
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -1,0 +1,6 @@
+import { t } from "../i18n/index.js";
+import { esc } from "../utils/format.js";
+
+export function renderToolsView({ tools, activeTool, workspaceHeader, workspaceMarkup }) {
+  return `<div class="card"><div class="section-title"><h2>${t("tools.directory.title")}</h2><span class="helper">${t("tools.directory.helper")}</span></div><div class="tool-grid">${tools.map((tool) => `<div class="card tool-card"><div class="tool-header"><div><h3>${esc(tool.title)}</h3><div class="helper">${esc(tool.summary)}</div></div><span class="pill">${esc(tool.status)}</span></div><div class="chips">${tool.tags.map((tag) => `<span class="chip">${esc(tag)}</span>`).join("")}</div><div class="form-actions"><button class="button" type="button" onclick="openTool('${tool.id}')">${t("common.use")}</button><button class="button ghost" type="button" onclick="showToolInfo('${tool.id}')">${t("common.viewInfo")}</button></div></div>`).join("")}</div></div><div class="workspace ${activeTool ? "" : "hidden"}" id="toolWorkspace">${activeTool ? `${workspaceHeader}${workspaceMarkup}` : ""}</div>${activeTool ? "" : `<div class="empty">${t("tools.directory.empty")}</div>`}<div class="card"><div class="section-title"><h2>${t("tools.history.title")}</h2><span class="helper">${t("tools.history.helper")}</span></div><div id="toolRunHistory"></div></div>`;
+}

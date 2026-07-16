@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hagsyn Graph</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/base.css?v=20260707-login-and-api-fix" />
+    <link rel="stylesheet" href="./assets/css/layout.css?v=20260707-login-and-api-fix" />
+    <link rel="stylesheet" href="./assets/css/components.css?v=20260707-login-and-api-fix" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="side">
+        <div class="brand">Hagsyn Graph</div>
+        <div class="tagline" id="shellTagline">个人 AI 工具工作台。视频处理、字幕生成与知识沉淀入口。</div>
+        <div class="nav" id="nav"></div>
+      </aside>
+
+      <main>
+        <div class="top">
+          <div class="title">
+            <h1 id="pageTitle"></h1>
+            <div class="subtitle" id="pageSubtitle"></div>
+          </div>
+          <div class="actions">
+            <div class="theme-switcher" id="themeSwitcher" aria-label="Theme switcher"></div>
+            <div class="theme-switcher" id="languageSwitcher" aria-label="Language switcher"></div>
+            <button class="icon-action" id="adminSettingsEntry" type="button" aria-label="打开管理员设置" title="管理员设置" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 3.75 13.7 5.1l2.13-.36.95 1.95 2.04.72-.13 2.16L21 12l-1.31 1.43.13 2.16-2.04.72-.95 1.95-2.13-.36L12 20.25l-1.7-1.35-2.13.36-.95-1.95-2.04-.72.13-2.16L3 12l1.31-1.43-.13-2.16 2.04-.72.95-1.95 2.13.36L12 3.75Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </button>
+            <div class="account-area">
+              <button class="user-button" id="userMenuButton" type="button" aria-expanded="false">
+                <span class="avatar" id="userAvatar">HA</span>
+                <span class="user-meta"><strong id="userName">hagsyn</strong><span id="userRole">本地工作台用户</span></span>
+                <span class="caret">▾</span>
+              </button>
+              <div class="user-menu" id="userMenu">
+                <div class="user-card">
+                  <strong id="userMenuName">hagsyn</strong>
+                  <span id="userMenuDesc">当前使用本地单机版工作台，默认 Bearer Token 已接入。</span>
+                </div>
+                <button class="menu-item" id="userAccountButton" type="button" onclick="showAccountInfo()">用户信息</button>
+                <button class="menu-item" id="userSettingsButton" type="button" onclick="showSettingsInfo()">设置</button>
+                <button class="menu-item danger" id="userLogoutButton" type="button" onclick="handleLogout()">退出登录</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <section id="view"></section>
+      </main>
+    </div>
+
+    <div class="modal-root" id="modalRoot" aria-live="polite"></div>
+    <div class="modal-root" id="settingsPanelRoot" aria-hidden="true">
+      <div class="modal-scrim" id="settingsPanelScrim"></div>
+      <aside class="settings-panel" id="storagePolicyPanel" aria-labelledby="storagePolicyTitle">
+        <div class="settings-panel-header">
+          <div>
+            <h2 id="storagePolicyTitle">存储与清理策略</h2>
+            <div class="helper" id="storagePolicyIntro">管理员可调整上传文件、压缩结果、字幕结果的保留时长，以及即时清理和手动清理策略。</div>
+          </div>
+          <button type="button" class="icon-button" id="closeStoragePolicyPanel" aria-label="关闭设置面板">✕</button>
+        </div>
+        <form id="storagePolicyForm">
+          <div class="settings-panel-body">
+            <div class="settings-overview">
+              <div class="settings-metric">
+                <div class="label" id="storageMetricAdminLabel">管理员视角</div>
+                <div class="value" id="storageMetricAdminValue">已启用</div>
+              </div>
+              <div class="settings-metric">
+                <div class="label" id="storageMetricCleanupLabel">最近清理</div>
+                <div class="value" id="cleanupLastRun">尚未执行</div>
+              </div>
+              <div class="settings-metric">
+                <div class="label" id="storageMetricSourceLabel">当前策略源</div>
+                <div class="value" id="storageMetricSourceValue">后端配置</div>
+              </div>
+            </div>
+
+            <div class="settings-layout">
+              <div class="settings-main">
+                <section class="settings-section card">
+                  <div class="section-title"><h2 id="storageRetentionTitle">结果保留</h2><span class="status-badge live" id="storageRetentionBadge">后端配置</span></div>
+                  <div class="settings-grid">
+                    <div class="settings-row">
+                      <label for="storageUploadRetentionHours" id="storageUploadRetentionLabel">原始上传文件保留时长（小时）</label>
+                      <input id="storageUploadRetentionHours" name="uploadRetentionHours" type="number" min="1" max="2160" />
+                    </div>
+                    <div class="settings-row">
+                      <label for="storageCompressedRetentionHours" id="storageCompressedRetentionLabel">压缩结果文件保留时长（小时）</label>
+                      <input id="storageCompressedRetentionHours" name="compressedRetentionHours" type="number" min="1" max="4320" />
+                    </div>
+                    <div class="settings-row wide">
+                      <label for="storageSubtitleRetentionHours" id="storageSubtitleRetentionLabel">字幕结果文件保留时长（小时）</label>
+                      <input id="storageSubtitleRetentionHours" name="subtitleRetentionHours" type="number" min="1" max="4320" />
+                    </div>
+                    <div class="settings-row wide">
+                      <label for="storageToolRunRetentionHours" id="storageToolRunRetentionLabel">工具使用记录保留时长（小时）</label>
+                      <input id="storageToolRunRetentionHours" name="toolRunRetentionHours" type="number" min="1" max="8760" />
+                    </div>
+                  </div>
+                </section>
+
+                <section class="settings-section card">
+                  <div class="section-title"><h2 id="storageCleanupRulesTitle">清理规则</h2><span class="helper" id="storageCleanupRulesHelper">即时与自动清理</span></div>
+                  <div class="settings-grid">
+                    <label class="settings-inline" for="storageAutoCleanupEnabled">
+                      <input id="storageAutoCleanupEnabled" name="autoCleanupEnabled" type="checkbox" />
+                      <div>
+                        <strong id="storageAutoCleanupTitle">启用自动清理</strong>
+                        <span id="storageAutoCleanupDesc">开启后，后端会按保留时长规则清理过期文件。</span>
+                      </div>
+                    </label>
+                    <label class="settings-inline" for="storageDeleteIntermediateAudio">
+                      <input id="storageDeleteIntermediateAudio" name="deleteIntermediateAudio" type="checkbox" />
+                      <div>
+                        <strong id="storageDeleteAudioTitle">字幕中间音频立即删除</strong>
+                        <span id="storageDeleteAudioDesc">字幕生成成功后立即删除中间 `.wav` 文件，减少空间占用。</span>
+                      </div>
+                    </label>
+                    <label class="settings-inline wide" for="storageCleanupFailedTemporaryFiles">
+                      <input id="storageCleanupFailedTemporaryFiles" name="cleanupFailedTemporaryFiles" type="checkbox" />
+                      <div>
+                        <strong id="storageCleanupFailedTitle">失败任务临时文件立即清理</strong>
+                        <span id="storageCleanupFailedDesc">工具处理失败时，立刻清除当次临时文件，避免残留。</span>
+                      </div>
+                    </label>
+                  </div>
+                </section>
+              </div>
+
+              <div class="settings-side">
+                <section class="settings-section card">
+                  <div class="section-title"><h2 id="storageAboutTitle">策略说明</h2><span class="helper" id="storageAboutBadge">真实接口</span></div>
+                  <div class="helper" id="storageAboutHelper">当前保存动作会直接写入后端配置文件，手动清理也会调用真实管理员接口执行。</div>
+                  <div class="helper" id="storagePolicyStatus">尚未加载配置。</div>
+                </section>
+
+                <section class="settings-section card">
+                  <div class="section-title"><h2 id="cleanupActivityTitle">最近清理记录</h2><span class="helper" id="cleanupActivityHelper">最多保留 5 条</span></div>
+                  <div class="activity-list" id="cleanupActivityList"></div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-panel-footer">
+            <button class="button ghost" id="manualCleanupButton" type="button">立即清理一次</button>
+            <button class="button ghost" id="reloadStoragePolicyButton" type="button">重新加载</button>
+            <button class="button" id="saveStoragePolicyButton" type="submit">保存策略</button>
+          </div>
+        </form>
+      </aside>
+    </div>
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="./assets/js/app.js?v=20260707-login-and-api-fix"></script>
+  </body>
+</html>
