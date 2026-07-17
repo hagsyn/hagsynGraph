@@ -1,16 +1,50 @@
-# Hagsyn Video Compressor MVP
+# Hagsyn AI Workspace
 
-当前项目已收敛为一个本地单机版视频压缩工具 MVP。
+Hagsyn 是一个面向真实任务的 AI 工作台。
 
-当前 MVP 已包含：
+它不是单一工具页，也不是知识图谱演示站，而是一个保留统一产品骨架、优先承载真实工具，并为后续知识沉淀预留结构空间的本地工作台产品。
 
-- 上传常见视频格式 `mp4 / mov / m4v`
-- 三种压缩模式：`平衡压缩 / 高压缩 / 高质量`
-- FastAPI 同步压缩接口
-- 本机 `ffmpeg` 压缩执行
-- 压缩完成结果卡片
-- 压缩后文件下载
-- 单用户 Bearer Token 鉴权
+当前 README 采用产品规划口径，不把仓库简单定义成某一个现状中的单点工具。
+
+## 产品定位
+
+Hagsyn 当前的核心方向是：
+
+- 保持 `Dashboard / Tools / Nodes / Graph / Roadmaps` 的工作台骨架
+- 以 `Tools` 作为当前第一优先级的真实执行层
+- 让 `Nodes / Graph / Roadmaps` 作为后续知识沉淀的长期模块
+- 用统一的前后端和文档体系支撑后续持续扩展
+
+一句话来说：
+
+> Hagsyn 是一个 AI 工作台，先把真实能用的工具放进来，再围绕实际使用过程沉淀知识、关系和路线。
+
+## 当前模块骨架
+
+当前产品骨架包括：
+
+- `Dashboard`
+  - 工作台首页与状态总览
+- `Tools`
+  - 真实工具目录与工具工作区
+- `Nodes`
+  - 知识对象承载位
+- `Graph`
+  - 对象关系承载位
+- `Roadmaps`
+  - 路线与阶段目标承载位
+
+其中：
+
+- `Tools` 是当前主线
+- `Knowledge` 相关模块保留结构，但不依赖 demo 数据伪造活跃度
+
+## 建设原则
+
+- 真实工具优先，不做只看起来完整的展示型壳子
+- 所有能力尽量落在统一工作台内，而不是各自长成割裂页面
+- 先保住产品骨架，再逐步扩展工具与知识能力
+- 文档、标准、UX 和项目内 skill 一起作为长期治理基线
 
 ## 目录结构
 
@@ -21,67 +55,68 @@ Hagsyn-Graph/
 │   └── skills/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py
-│   │   ├── models.py
-│   │   ├── schemas.py
-│   │   ├── database.py
-│   │   └── config.py
 │   ├── tests/
-│   │   └── test_api.py
 │   └── requirements.txt
+├── deploy/
 ├── docs/
 │   ├── INDEX.md
-│   ├── archive/
 │   ├── product/
 │   ├── standards/
 │   ├── testing/
 │   └── ux/
-└── frontend/
-    └── index.html
+├── frontend/
+│   ├── assets/
+│   ├── tests/
+│   └── index.html
+└── hagsyn-server.sh
 ```
 
-## 规范资料
+## 文档体系
 
-项目内已建立三条长期资料主线：
+项目内长期文档主线包括：
 
 - `docs/product/`
-  - 产品定位、信息架构、模块地图、工具策略、产品路线
+  - 产品定位、信息架构、模块地图、工具策略、路线规划
 - `docs/standards/`
-  - 程序设计规范、代码开发规范、API 规范、数据建模规范、文档规范
+  - 工程原则、前后端规范、API、数据建模、文档与 skill 规范
 - `docs/ux/`
-  - UI 视觉规范、布局导航规范、组件规范、工具工作区模式、品牌语气
+  - 视觉系统、布局导航、组件规范、工具工作区模式、品牌语气
+- `docs/testing/`
+  - 功能测试报告与交互验证记录
 
-后续新增功能、调整模块或扩展工具时，默认先参考这三条文档主线，而不是直接凭临时口头约定推进。
+统一入口：
 
-如果要快速查看整个资料体系，从 [`docs/INDEX.md`](/Users/hagsyn/ai/workspace/Hagsyn-Graph/docs/INDEX.md) 开始。
+- [`docs/INDEX.md`](/Users/hagsyn/ai/workspace/Hagsyn-Graph/docs/INDEX.md)
 
 ## 项目内 Skills
 
-当前仓库还建立了项目内 skill 控制层：
+当前仓库已建立项目内治理 skill，包括：
 
-- `.agents/skills/hagsyn-product-brain/`
-- `.agents/skills/hagsyn-workflow-harness/`
-- `.agents/skills/hagsyn-product-council/`
-- `.agents/skills/hagsyn-product-guard/`
-- `.agents/skills/hagsyn-ui-workspace-pattern/`
-- `.agents/skills/hagsyn-knowledge-shell/`
-- `.agents/skills/hagsyn-testing-council/`
-- `.agents/skills/hagsyn-review-council/`
-- `.agents/skills/hagsyn-skill-review/`
+- `hagsyn-product-brain`
+- `hagsyn-product-council`
+- `hagsyn-product-guard`
+- `hagsyn-workflow-harness`
+- `hagsyn-ui-workspace-pattern`
+- `hagsyn-knowledge-shell`
+- `hagsyn-testing-council`
+- `hagsyn-review-council`
+- `hagsyn-skill-review`
+- `hagsyn-git-push-receipt`
+- `hagsyn-cd-receipt`
 
-这些 skill 用于约束后续产品开发、workflow 执行顺序、产品边界、UI 工作区模式、Knowledge 模块边界、测试与交付前全量审查，以及项目内 skill 自身的审核流程。
+职责索引见：
 
-如果要看职责索引，从 [`docs/standards/08-project-skill-index.md`](/Users/hagsyn/ai/workspace/Hagsyn-Graph/docs/standards/08-project-skill-index.md) 开始。
+- [`docs/standards/08-project-skill-index.md`](/Users/hagsyn/ai/workspace/Hagsyn-Graph/docs/standards/08-project-skill-index.md)
 
 ## 本地启动
 
-请先确认本机已安装 `ffmpeg`：
+推荐先确认本机已安装 `ffmpeg`：
 
 ```bash
 ffmpeg -version
 ```
 
-推荐直接使用统一脚本：
+统一启动脚本：
 
 ```bash
 cd /Users/hagsyn/ai/workspace/Hagsyn-Graph
@@ -109,15 +144,16 @@ sh hagsyn-server.sh -backup status
 
 说明：
 
-- 不带参数时，默认同时操作前端和后端
+- 默认同时操作前端和后端
 - `-front` 只操作前端静态服务
 - `-backup` 只操作后端服务
-- `-all` 和 `-mix` 也可用，等价于默认同时操作前后端
 - 日志默认写入 `.runtime/logs/`
 
 ## 运行时配置
 
-后端配置统一定义在 `backend/app/config.py`，并可通过 `backend/.env` 覆盖。当前默认是本地单机模式：
+后端配置统一定义在 `backend/app/config.py`，并允许通过 `backend/.env` 覆盖。
+
+当前默认配置示例：
 
 ```env
 APP_RUNTIME_MODE=local
@@ -132,41 +168,17 @@ WHISPER_MODEL=base
 WHISPER_DEVICE=cpu
 ```
 
-如果部署到服务器，优先通过 `.env` 调整这些值，而不是改业务代码。例如服务器上的 `ffmpeg` 路径不同，可以设置：
+部署到服务器时，优先通过 `.env` 覆盖，不直接改业务代码。
 
-```env
-APP_RUNTIME_MODE=server
-FFMPEG_BIN=/usr/bin/ffmpeg
-FFPROBE_BIN=/usr/bin/ffprobe
-```
+## 本地访问
 
-文件目录、鉴权账号和数据库也都应继续通过配置覆盖，保持同一套后端代码可在本地模式和服务器模式下运行。
-
-### 1. 启动后端
-
-```bash
-cd /Users/hagsyn/ai/workspace/Hagsyn-Graph/backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-健康检查：
+后端健康检查：
 
 ```bash
 curl http://127.0.0.1:8000/api/health
 ```
 
-### 2. 打开前端
-
-直接打开：
-
-```txt
-/Users/hagsyn/ai/workspace/Hagsyn-Graph/frontend/index.html
-```
-
-或用本地静态服务：
+前端静态服务：
 
 ```bash
 cd /Users/hagsyn/ai/workspace/Hagsyn-Graph/frontend
@@ -176,30 +188,16 @@ python3 -m http.server 5173
 浏览器访问：
 
 ```txt
-http://127.0.0.1:5173/?v=video-compressor-v1
+http://127.0.0.1:5173/?v=hagsyn-workspace
 ```
 
-## 用户登录鉴权
+## 登录与接口
 
-当前 MVP 使用单用户登录，默认本地开发账号：
+当前本地开发默认账号：
 
 ```txt
 用户名：hagsyn
 密码：hagsyn123
-```
-
-登录成功后，前端会把 token 存到 `localStorage`，并在请求中发送：
-
-```txt
-Authorization: Bearer hagsyn-local-dev-token
-```
-
-生产或公网部署前，请在 `backend/.env` 中覆盖默认账号、密码和 token：
-
-```env
-AUTH_USERNAME=hagsyn
-AUTH_PASSWORD=换成强密码
-AUTH_TOKEN=换成足够长的随机字符串
 ```
 
 登录接口：
@@ -210,33 +208,14 @@ curl -X POST http://127.0.0.1:8000/api/auth/login \
   -d '{"username":"hagsyn","password":"hagsyn123"}'
 ```
 
-除 `/api/health` 和 `/api/auth/login` 外，业务接口都需要 Bearer Token。
+除 `/api/health` 和 `/api/auth/login` 外，业务接口需要 Bearer Token。
 
-## 视频压缩接口
+## 当前说明
 
-压缩接口：
+当前仓库里已经有若干真实工具与工作区实现，但 README 的定位以产品规划和工作台主线为准，不以某一个阶段性的单点工具现状来定义整个项目。
 
-```bash
-curl -X POST http://127.0.0.1:8000/api/tools/video-compress \
-  -H 'Authorization: Bearer hagsyn-local-dev-token' \
-  -F mode=balanced \
-  -F file=@/path/to/sample.mp4
-```
+更具体的产品口径，请优先查看：
 
-下载接口：
-
-```txt
-GET /api/tools/video-compress/files/{file_id}
-```
-
-## 测试
-
-```bash
-cd /Users/hagsyn/ai/workspace/Hagsyn-Graph/backend
-source .venv/bin/activate
-pytest -q
-```
-
-## v0.1 说明
-
-这是当前真实可运行的首个工具型 MVP，重点是跑通“上传视频 → 选择压缩模式 → 后端本地压缩 → 展示结果卡片 → 下载文件”的核心闭环。后续可以继续增加更多真实工具能力，而不是继续维护 demo 数据。
+- [`docs/product/00-product-positioning.md`](/Users/hagsyn/ai/workspace/Hagsyn-Graph/docs/product/00-product-positioning.md)
+- [`docs/product/01-information-architecture.md`](/Users/hagsyn/ai/workspace/Hagsyn-Graph/docs/product/01-information-architecture.md)
+- [`docs/product/02-module-map.md`](/Users/hagsyn/ai/workspace/Hagsyn-Graph/docs/product/02-module-map.md)
