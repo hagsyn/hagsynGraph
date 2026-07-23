@@ -13,6 +13,7 @@ import { state, clearAuthSession, getAuthToken, getCurrentUser, getDefaultStorag
 import { renderBurnWorkspace } from "./tools/video-subtitle-burn.js";
 import { renderVideoWorkspace } from "./tools/video-compress.js";
 import { renderSubtitleWorkspace } from "./tools/vtt-subtitle.js";
+import { toHistoryMessage, toUserMessage } from "./utils/errors.js";
 import { formatBytes, formatDateTime, esc } from "./utils/format.js";
 import { parseRoute, syncRoute } from "./utils/router.js";
 import { renderDashboardView } from "./views/dashboard.js?v=20260707-login-minimal";
@@ -86,6 +87,16 @@ function setShellCopy() {
   if (adminButton) {
     adminButton.setAttribute("aria-label", t("userMenu.adminSettings"));
     adminButton.setAttribute("title", t("userMenu.adminSettings"));
+  }
+  const mobileNavToggle = document.getElementById("mobileNavToggle");
+  if (mobileNavToggle) {
+    mobileNavToggle.setAttribute("aria-label", t("nav.mobile.open"));
+    mobileNavToggle.setAttribute("title", t("nav.mobile.open"));
+  }
+  const mobileNavClose = document.getElementById("mobileNavClose");
+  if (mobileNavClose) {
+    mobileNavClose.setAttribute("aria-label", t("nav.mobile.close"));
+    mobileNavClose.setAttribute("title", t("nav.mobile.close"));
   }
   setText("userAccountButton", t("userMenu.account"));
   setText("userSettingsButton", t("userMenu.settings"));
@@ -177,6 +188,7 @@ function updateShellForRoute() {
   const languageSwitcher = document.getElementById("languageSwitcher");
   const userButton = document.getElementById("userMenuButton");
   const adminEntry = document.getElementById("adminSettingsEntry");
+  const mobileNavToggle = document.getElementById("mobileNavToggle");
   const isAuthOnly = isAuthRoute(state.current);
   if (appEl) appEl.classList.toggle("auth-route", isAuthOnly);
   if (mainEl) mainEl.classList.toggle("auth-main", isAuthOnly);
@@ -184,6 +196,7 @@ function updateShellForRoute() {
   if (languageSwitcher) languageSwitcher.style.display = "flex";
   if (userButton) userButton.style.display = isAuthOnly ? "none" : "flex";
   if (adminEntry && isAuthOnly) adminEntry.style.display = "none";
+  if (mobileNavToggle) mobileNavToggle.style.display = isAuthOnly ? "none" : "";
 }
 
 function applyTheme(name) {
@@ -207,6 +220,26 @@ function setUserMenu(open) {
   button.classList.toggle("open", open);
   button.setAttribute("aria-expanded", String(open));
   menu.classList.toggle("open", open);
+}
+
+function setMobileNav(open) {
+  state.mobileNavOpen = open;
+  document.querySelector(".app")?.classList.toggle("mobile-nav-open", open);
+  const toggle = document.getElementById("mobileNavToggle");
+  if (toggle) toggle.setAttribute("aria-expanded", String(open));
+  const scrim = document.getElementById("mobileNavScrim");
+  if (scrim) scrim.hidden = !open;
+}
+
+function closeMobileNav() {
+  if (!state.mobileNavOpen) return;
+  setMobileNav(false);
+}
+
+function toggleMobileNav(event) {
+  if (event) event.stopPropagation();
+  setUserMenu(false);
+  setMobileNav(!state.mobileNavOpen);
 }
 
 function syncUserIdentity() {
@@ -593,8 +626,9 @@ async function handleToolSubmit(event) {
     toast({ title: t("tool.videoCompress.toast.done.title"), message });
   } catch (error) {
     console.error(error);
-    showModal({ title: t("tool.videoCompress.modal.fail.title"), message: (error.message || "Please try again later").replace(/^"|"$/g, ""), actions: [{ label: t("common.close"), variant: "ghost" }] });
+    showModal({ title: t("tool.videoCompress.modal.fail.title"), message: toUserMessage(error, "videoCompress"), actions: [{ label: t("common.close"), variant: "ghost" }] });
   } finally {
+    await loadToolRuns();
     setSubmitting(false);
   }
 }
@@ -619,8 +653,9 @@ async function handleSubtitleSubmit(event) {
   } catch (error) {
     console.error(error);
     finishSubtitlePseudoProgress(false);
-    showModal({ title: t("tool.vttSubtitle.modal.fail.title"), message: (error.message || "Please try again later").replace(/^"|"$/g, ""), actions: [{ label: t("common.close"), variant: "ghost" }] });
+    showModal({ title: t("tool.vttSubtitle.modal.fail.title"), message: toUserMessage(error, "vttSubtitle"), actions: [{ label: t("common.close"), variant: "ghost" }] });
   } finally {
+    await loadToolRuns();
     setSubtitleSubmitting(false);
   }
 }
@@ -645,8 +680,9 @@ async function handleBurnSubmit(event) {
   } catch (error) {
     console.error(error);
     finishBurnPseudoProgress(false);
-    showModal({ title: t("tool.videoSubtitleBurn.modal.fail.title"), message: (error.message || "Please try again later").replace(/^"|"$/g, ""), actions: [{ label: t("common.close"), variant: "ghost" }] });
+    showModal({ title: t("tool.videoSubtitleBurn.modal.fail.title"), message: toUserMessage(error, "videoSubtitleBurn"), actions: [{ label: t("common.close"), variant: "ghost" }] });
   } finally {
+    await loadToolRuns();
     setBurnSubmitting(false);
   }
 }
@@ -686,8 +722,8 @@ function toolLabel(toolType) {
 async function downloadRunArtifact(downloadUrl) {
   try {
     await downloadBlob(downloadUrl, "hagsyn-tool-result");
-  } catch {
-    showModal({ title: t("tool.videoCompress.modal.downloadFail.title"), message: "This artifact may already have been cleaned up. Run the tool again to generate a fresh result.", actions: [{ label: t("common.close"), variant: "ghost" }] });
+  } catch (error) {
+    showModal({ title: t("tool.videoCompress.modal.downloadFail.title"), message: toUserMessage(error, "downloadArtifact"), actions: [{ label: t("common.close"), variant: "ghost" }] });
   }
 }
 
@@ -698,7 +734,7 @@ function renderToolRunHistory() {
     root.innerHTML = `<div class="empty">${t("tools.history.empty")}</div>`;
     return;
   }
-  root.innerHTML = state.toolRuns.map((run) => `<div class="roadline"><div><strong>${esc(t("tools.history.item", { tool: toolLabel(run.toolType), status: run.status }))}</strong><div class="helper">${esc(run.inputFileName || t("tools.history.noFile"))} · ${formatDateTime(run.startedAt)} · ${run.durationMs ?? "-"} ms</div></div>${run.downloadUrl ? `<button class="button ghost" type="button" onclick="downloadRunArtifact('${esc(run.downloadUrl)}')">${t("common.downloadResult")}</button>` : `<span class="status-badge wait">${t("tools.history.noDownload")}</span>`}</div>`).join("");
+  root.innerHTML = state.toolRuns.map((run) => `<div class="roadline"><div><strong>${esc(t("tools.history.item", { tool: toolLabel(run.toolType), status: run.status }))}</strong><div class="helper">${esc(run.inputFileName || t("tools.history.noFile"))} · ${formatDateTime(run.startedAt)} · ${run.durationMs ?? "-"} ms</div>${run.errorMessage ? `<div class="helper">${esc(toHistoryMessage(run.errorMessage, run.toolType))}</div>` : ""}</div>${run.downloadUrl ? `<button class="button ghost" type="button" onclick="downloadRunArtifact('${esc(run.downloadUrl)}')">${t("common.downloadResult")}</button>` : `<span class="status-badge wait">${t("tools.history.noDownload")}</span>`}</div>`).join("");
 }
 
 async function loadToolRuns() {
@@ -739,7 +775,7 @@ async function handleLoginSubmit(event) {
     toast({ title: t("auth.loginSuccess.title"), message: t("auth.loginSuccess.message") });
     await show("dashboard");
   } catch (error) {
-    showModal({ title: t("auth.loginFail.title"), message: (error.message || "Please try again later").replace(/^\"|\"$/g, ""), actions: [{ label: t("common.close"), variant: "ghost" }] });
+    showModal({ title: t("auth.loginFail.title"), message: toUserMessage(error, "login"), actions: [{ label: t("common.close"), variant: "ghost" }] });
   }
 }
 
@@ -754,7 +790,7 @@ async function handleRegisterSubmit(event) {
     toast({ title: t("auth.registerSuccess.title"), message: t("auth.registerSuccess.message") });
     await show("dashboard");
   } catch (error) {
-    showModal({ title: t("auth.registerFail.title"), message: (error.message || "Please try again later").replace(/^\"|\"$/g, ""), actions: [{ label: t("common.close"), variant: "ghost" }] });
+    showModal({ title: t("auth.registerFail.title"), message: toUserMessage(error, "register"), actions: [{ label: t("common.close"), variant: "ghost" }] });
   }
 }
 
@@ -894,6 +930,7 @@ const renderers = {
 };
 
 async function show(page, toolId = "") {
+  closeMobileNav();
   state.current = pages.includes(page) || isAuthRoute(page) ? page : "dashboard";
   state.toolRoute = state.current === "tools" ? toolId : "";
   if (!state.authChecked) {
@@ -965,9 +1002,16 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && state.modalState) closeModal();
   if (event.key === "Escape" && state.userMenuOpen) setUserMenu(false);
   if (event.key === "Escape" && state.storagePolicyPanelOpen) closeStoragePolicyPanel();
+  if (event.key === "Escape" && state.mobileNavOpen) closeMobileNav();
+});
+window.addEventListener("resize", () => {
+  if (window.innerWidth > 760) closeMobileNav();
 });
 
 document.getElementById("userMenuButton").addEventListener("click", toggleUserMenu);
+document.getElementById("mobileNavToggle").addEventListener("click", toggleMobileNav);
+document.getElementById("mobileNavClose").addEventListener("click", closeMobileNav);
+document.getElementById("mobileNavScrim").addEventListener("click", closeMobileNav);
 document.getElementById("adminSettingsEntry").addEventListener("click", openStoragePolicyPanel);
 document.getElementById("closeStoragePolicyPanel").addEventListener("click", closeStoragePolicyPanel);
 document.getElementById("settingsPanelScrim").addEventListener("click", closeStoragePolicyPanel);

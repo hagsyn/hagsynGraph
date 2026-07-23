@@ -59,7 +59,7 @@ else
 fi
 
 SSH_BASE="ssh -o StrictHostKeyChecking=no -p ${SERVER_PORT} ${SERVER_USER}@${SERVER_HOST}"
-RSYNC_BASE="rsync -az --delete --exclude '.git/' --exclude 'backend/.venv/' --exclude 'backend/__pycache__/' --exclude 'backend/.pytest_cache/' --exclude 'backend/storage/' --exclude 'backend/hagsyn_graph.db' --exclude 'frontend/.DS_Store' --exclude '__pycache__/' --exclude '.codegraph/'"
+RSYNC_BASE="rsync -az --delete --exclude '.git/' --exclude 'backend/.venv/' --exclude 'backend/__pycache__/' --exclude 'backend/.pytest_cache/' --exclude 'backend/storage/' --exclude 'backend/hagsyn_graph.db' --exclude 'backend/.env.server' --exclude 'frontend/.DS_Store' --exclude '__pycache__/' --exclude '.codegraph/'"
 
 run_expect "$SSH_BASE 'sudo mkdir -p \"$DEPLOY_DIR\" \"$DATA_DIR/uploads\" \"$DATA_DIR/compressed\" \"$DATA_DIR/subtitles\" && sudo chown -R \"$APP_USER\":\"$APP_GROUP\" \"$DEPLOY_DIR\" \"$DATA_DIR\"'"
 run_expect "$RSYNC_BASE '$ROOT_DIR/' '${SERVER_USER}@${SERVER_HOST}:$DEPLOY_DIR/'"

@@ -61,7 +61,9 @@ try {
   setLocale("zh-CN");
   assert.equal(t("nav.dashboard"), "Dashboard", "known keys should resolve using current locale");
   assert.equal(t("common.close"), "关闭", "zh-CN copy should be available");
+  assert.equal(t("common.error.network"), "当前无法连接到本地服务，请确认服务已启动后再试。", "zh-CN error fallback copy should be available");
   assert.equal(t("tool.videoCompress.toast.done.title"), "压缩已完成", "zh locale should resolve toast copy");
+  assert.equal(t("auth.loginFail.invalid"), "账号或密码不正确，请检查后重试。", "zh locale should resolve auth error copy");
   assert.equal(
     t("tools.history.item", { tool: "Video Compress", status: "success" }),
     "Video Compress · success",
